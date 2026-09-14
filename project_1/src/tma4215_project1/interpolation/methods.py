@@ -1,4 +1,6 @@
 import numpy as np
+import math
+
 import numpy.typing as npt
 
 def L(
@@ -35,6 +37,21 @@ def lagrange(
         
     return pol
 
+def interpolation_bound(
+    x_nodes: npt.NDArray[np.float64], 
+    grid: npt.NDArray[np.float64]
+    ) -> float:
+    """Theoretical lagrange interpolation bound for f """
+    N = len(x_nodes)
+    omega = np.ones_like(grid)
+    
+    for node in x_nodes:
+        omega *= grid - node
+    
+    omega_max = np.max(np.abs(omega)) #Numerical estimate of omega_max
+    
+    return (2 * np.pi)**N/math.factorial(N) * omega_max
+
 def phi(
     r: npt.NDArray[np.float64], 
     epsilon: float
@@ -51,7 +68,7 @@ def rbf_matrix(
     
     return phi(diff, epsilon)
 
-def RBF(
+def rbf(
     x_nodes: npt.NDArray[np.float64],
     y_nodes: npt.NDArray[np.float64],
     x: npt.NDArray[np.float64],
