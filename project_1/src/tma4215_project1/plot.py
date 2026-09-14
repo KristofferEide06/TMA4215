@@ -290,7 +290,7 @@ def compare_piecewise_global(
     k_arr: npt.NDArray[np.int64],
     n: int,
     interval: tuple[float, float],
-) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], Figure, Axes]:
+) -> tuple[npt.NDArray[np.int64], npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], Figure, Axes]:
     """Compares max norm error as function of distinct nodes for piecewise interpolation and lagrange"""
     piecewise_err_arr = np.zeros_like(k_arr, dtype = float)
     equidistant_err_arr = np.zeros_like(k_arr, dtype = float)
@@ -357,3 +357,31 @@ def plot_cond_M(
     
     return cond_arr, fig, ax
     
+def plot_rbf_error_epsilon(
+    fun: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
+    x_nodes: npt.NDArray[np.float64],
+    y_nodes: npt.NDArray[np.float64],
+    x: npt.NDArray[np.float64],
+    epsilon_arr: npt.NDArray[np.float64],
+) -> tuple[npt.NDArray[np.float64], Figure, Axes]:
+    """Plots rbf error as function of epsilon"""
+    rbf_max_err_arr = np.zeros_like(epsilon_arr, dtype = float)
+    
+    fun_vals = fun(x)
+    
+    for i, epsilon in enumerate(epsilon_arr):
+        rbf_interpolant = rbf(x_nodes, y_nodes, x, epsilon)
+        
+        rbf_max_err_arr[i] = max_norm(fun_vals, rbf_interpolant)
+    
+    fig, ax = plt.subplot(figsize = (8, 4))
+    
+    ax.plot(epsilon_arr, rbf_max_err_arr)
+    ax.grid()
+    
+    ax.set_title('RBF error as function of epsilon')
+    
+    ax.set_xlabel(r'$\epsilon$')
+    ax.set_ylabel(r'$L^\infty$')
+    
+    return rbf_max_err_arr, fig, ax
