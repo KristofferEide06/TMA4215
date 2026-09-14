@@ -17,6 +17,7 @@ from .interpolation.nodes import(
 
 from .interpolation.methods import(
     lagrange,
+    piecewise_interpolation,
     rbf,
     rbf_matrix,
     interpolation_bound,
@@ -49,7 +50,7 @@ def plot_chebishev_equidistant_lagrange(
         ax (Axes | None, optional): Either appends ax to existing figure or creates new one if ax is none. Defaults to None.
 
     Returns:
-        tuple[Figure, Axes, float, float]: Figure, axes, equidistant error, lagrange error
+        tuple[float, float, Figure, Axes]: Figure, axes, equidistant error, lagrange error
     """
     standalone = ax is None
     
@@ -74,7 +75,7 @@ def plot_chebishev_equidistant_lagrange(
     ax.plot(x_arr, fun(x_arr), label = "True function")
     
     error_text = (
-        r'Rel. $L^\infty$ error'
+        r'$L^\infty$ error'
         f'\nEquidistant: {equidistant_max_error:.2g}\n'
         f'Chebishev: {chebishev_max_error:.2g}\n'
     )
@@ -147,7 +148,7 @@ def plot_multiple_n_lagrange(
     
     for ax, n in zip(axs_flat, n_arr):
         
-        _, _, equidistant_error, chebishev_error = (
+        equidistant_error, chebishev_error, _, _ = (
             plot_chebishev_equidistant_lagrange(
                 fun = fun,
                 interval = interval,
@@ -255,3 +256,104 @@ def compare_l2_max_norm(
     fig.tight_layout(rect = (0, 0, 1, 0.90))
     
     return equidistant_max_norm_arr, chebishev_max_norm_arr, equidistant_l2_norm_arr, chebishev_l2_norm_arr, fig, axs
+
+def piecewise_lagrangian_k(
+    fun: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
+    x: npt.NDArray[np.float64], 
+    k_arr: npt.NDArray[np.int64],
+    n: int,
+    interval: tuple[float, float],
+) -> tuple[npt.NDArray[np.float64], Figure, Axes]:
+    """Plot piecewise lagrangian maximum norm error as function of K"""
+    max_error_arr = np.zeros_like(k_arr, dtype = float)
+    
+    fun_vals = fun(x)
+    
+    for i, k in enumerate(k_arr):
+        piecewise_interpolant = piecewise_interpolation(fun, x, n, k, interval)
+        
+        max_error_arr[i] = np.max(np.abs(fun_vals - piecewise_interpolant))
+        
+    fig, ax = plt.subplots(figsize = (8, 4))
+    
+    ax.plot(k_arr, max_error_arr)
+    ax.set_xlabel('K')
+    ax.set_ylabel(r'$L^\infty$')
+    ax.set_title('Max error of piecewise interpolation as function of K')
+    ax.grid()
+    
+    return max_error_arr, fig, ax 
+
+def compare_piecewise_global(
+    fun: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
+    x: npt.NDArray[np.float64],
+    k_arr: npt.NDArray[np.int64],
+    n: int,
+    interval: tuple[float, float],
+) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], Figure, Axes]:
+    """Compares max norm error as function of distinct nodes for piecewise interpolation and lagrange"""
+    piecewise_err_arr = np.zeros_like(k_arr, dtype = float)
+    equidistant_err_arr = np.zeros_like(k_arr, dtype = float)
+    chebishev_err_arr = np.zeros_like(k_arr, dtype = float)
+    
+    num_nodes_arr = n*k_arr + 1
+    
+    fun_vals = fun(x)
+    
+    for i, k in enumerate(k_arr):
+        piecewise_interpolant = piecewise_interpolation(fun, x, n, k, interval)
+        
+        piecewise_err_arr[i] = max_norm(fun_vals, piecewise_interpolant)
+        
+        global_degree = num_nodes_arr[i] - 1
+        
+        equidistant_nodes = generate_equidistant_nodes(interval, global_degree)
+        chebishev_nodes = generate_chebishev_nodes(interval, global_degree)
+        
+        lagrange_equidistant = lagrange(equidistant_nodes, fun(equidistant_nodes), x)
+        lagrange_chebishev = lagrange(chebishev_nodes, fun(chebishev_nodes), x)
+        
+        equidistant_err_arr[i] = max_norm(fun_vals, lagrange_equidistant)
+        chebishev_err_arr[i] = max_norm(fun_vals, lagrange_chebishev)
+        
+    
+    fig, ax = plt.subplots(figsize = (8, 4))
+    
+    ax.plot(num_nodes_arr, piecewise_err_arr, label = 'piecewise')
+    ax.plot(num_nodes_arr, equidistant_err_arr, label = 'equidistant')
+    ax.plot(num_nodes_arr, chebishev_err_arr, label = 'chebishev')
+    
+    ax.set_xscale('log')
+    ax.set_yscale('log')
+
+    ax.set_xlabel('Number of discretization nodes')
+    ax.set_ylabel(r'$L^\infty$')
+    ax.set_title('Interpolation error as function of nodes')
+   
+    ax.grid()
+    ax.legend()
+    
+    return num_nodes_arr, piecewise_err_arr, equidistant_err_arr, chebishev_err_arr, fig, ax
+
+def plot_cond_M(
+    x_nodes: npt.NDArray[np.float64],
+    epsilon_arr: npt.NDArray[np.float64],
+) -> tuple[npt.NDArray[np.float64], Figure, Axes]:
+    """Plots condition number of RBF matrix as function of epsilon"""
+    cond_arr = np.zeros_like(epsilon_arr)
+    
+    for i, epsilon in enumerate(epsilon_arr):
+        M = rbf_matrix(x_nodes, epsilon) #Or second norm??
+        cond_arr[i] = np.linalg.cond(M, p = np.inf)
+    
+    fig, ax = plt.subplots(figsize = (8, 4))
+    
+    ax.set_yscale('log')
+    
+    ax.plot(epsilon_arr, cond_arr)
+    ax.set_xlabel(r'$\epsilon$')
+    ax.set_ylabel(r'$\kappa (M)$')
+    ax.grid()
+    
+    return cond_arr, fig, ax
+    
