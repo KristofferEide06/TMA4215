@@ -1,6 +1,7 @@
 import numpy as np
 import math
 
+from collections.abc import Callable
 import numpy.typing as npt
 
 def L(
@@ -51,6 +52,44 @@ def interpolation_bound(
     omega_max = np.max(np.abs(omega)) #Numerical estimate of omega_max
     
     return (2 * np.pi)**N/math.factorial(N) * omega_max
+
+def piecewise_interpolation(
+    fun: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
+    x: npt.NDArray[np.float64], 
+    n: int,
+    k: int, 
+    interval: tuple[float, float], 
+    ) -> npt.NDArray[np.float64]:
+    """piecewise lagrangian interpolation 
+
+    Args:
+        fun (Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]]): _Function to interpolate
+        x (npt.NDArray[np.float64]): Array to interpolate on
+        n (int): Number of nodes - n + 1
+        k (int): Number of disjunct intervals - k + 1
+        interval (tuple[float, float]): interval to interpolate on
+
+    Returns:
+        npt.NDArray[np.float64]: Iinterpolation values on x
+    """
+    points = np.linspace(interval[0], interval[1], k + 1)
+    intervals = np.column_stack((points[:-1], points[1:]))
+        
+    interpolation_arr = np.zeros_like(x, dtype = np.float64)
+        
+    for i, subinterval in enumerate(intervals):
+            left, right = subinterval
+            local_nodes = np.linspace(left, right, n + 1)
+            if i < len(intervals) - 1:
+                    mask = (x >= left) & (x < right)
+            else:
+                    mask = (x >= left) & (x < right)
+                        
+            x_local = x[mask]
+                
+            interpolation_arr[mask] = lagrange(local_nodes, fun(local_nodes), x_local)
+        
+    return interpolation_arr
 
 def phi(
     r: npt.NDArray[np.float64], 
