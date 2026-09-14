@@ -9,8 +9,8 @@ def generate_equidistant_nodes(
     return np.linspace(interval[0], interval[1], n + 1)
 
 def generate_chebishev_nodes(
+    interval: tuple[float, float],
     n: int, 
-    interval: tuple[float, float]
     ) -> npt.NDArray[np.float64]:
     """Generates n + 1 Chebishev nodes on interval"""
     j = np.arange(n + 1)
