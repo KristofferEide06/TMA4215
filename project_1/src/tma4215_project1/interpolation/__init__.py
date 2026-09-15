@@ -1,0 +1,1 @@
+"""Interpolation methods, nodes, and error norms."""
