@@ -3,6 +3,8 @@ import autograd.numpy as anp
 from autograd import grad
 
 import numpy.typing as npt
+from collections.abc import Callable
+from typing import Any
 
 from .methods import rbf
 
@@ -27,9 +29,9 @@ def generate_chebishev_nodes(
     return (b - a)*nodes/2 + (a + b)/2
 
 def make_cost(
-    fun,
-    interval,
-    N,
+    fun: Callable[[Any], Any],
+    interval: tuple[float, float],
+    N: int,
 ):
     a, b = interval
     
@@ -47,16 +49,17 @@ def make_cost(
     return cost
 
 def gradient_descent(
-    fun,
-    n,
-    interval,
-    epsilon,
-    N,
-    max_iter,
-    tol,
-    L,
-    rho,
-    rho_bar,
+    fun: Callable[[Any], Any],
+    n: int,
+    interval: tuple[float, float],
+    epsilon: float,
+    N: int,
+    max_iter: int,
+    max_backtracks: int,
+    tol: float,
+    L: float,
+    rho: float,
+    rho_bar: float,
 ):
     """Attempts to find ideal node placement and epsilon parameter using gradient descent
     with respect to the rbf interpolation of specific function
@@ -70,23 +73,30 @@ def gradient_descent(
         L: GD adjustment parameter, tau = 1/L
         max_iter: Max iterations of gd algorithm
         tol: Gradient tolerance
-        rho: Acceptance scaling factor. Increase L if step accepted
-        rho_bar: Rejection scaling factor. Decrease L if step rejected
+        rho: Acceptance scaling factor. Increase L if step accepted. 0 < rho < 1
+        rho_bar: Rejection scaling factor. Decrease L if step rejected. rho_bar >= 1
         
 
     Returns:
-        _type_: _description_
+        Updated x_nodes, eps array
     """
-    x_nodes = generate_equidistant_nodes(interval, n)
+    if L <= 0:
+        raise ValueError('L must be positive')
     
-    z = anp.concatenate((x_nodes, anp.array([epsilon])))
+    if not 0 < rho < 1:
+        raise ValueError('rho must satisfy 0 < rho < 1')
+    if rho_bar <= 1:
+        raise ValueError('rho_bar must be greater than 1')
 
     iterations = 0
+    
+    x_nodes = generate_equidistant_nodes(interval, n)
+    z = anp.concatenate((x_nodes, anp.array([epsilon])))
     
     cost = make_cost(fun, interval, N)
     grad_c = grad(cost) # pyright: ignore[reportCallIssue]
     
-    while iterations <= max_iter:
+    while iterations < max_iter:
         g = grad_c(z)
         
         if anp.linalg.norm(g) < tol:
@@ -94,18 +104,24 @@ def gradient_descent(
         
         phi = cost(z)
         
-        while True:
+        backtracks = 0
+        step_accepted = False
+        
+        while backtracks < max_backtracks:
+            backtracks += 1
             z_new = z - 1/L * g
             phi_new = cost(z_new)
             
             if phi_new <= phi - 1 / (2 * L) * anp.dot(g, g):
                 z = z_new
                 L = rho * L
-                
+                step_accepted = True
                 break
-            else:
-                L = rho_bar * L
             
-            iterations += 1
+            L = rho_bar * L
+            
+        if not step_accepted:
+            raise RuntimeError('Backtracking couldnt find acceptable step')    
+        iterations += 1
     
-    return z[:-1], z[-1]
+    return z[:-1], z[-1], iterations, cost(z)
