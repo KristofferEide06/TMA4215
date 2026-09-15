@@ -37,7 +37,8 @@ def interpolation_bound(
     x_nodes: npt.NDArray[np.float64], 
     grid: npt.NDArray[np.float64]
     ) -> float:
-    """Theoretical lagrange interpolation bound for equidistional nodes for f """
+    """Theoretical lagrange interpolation bound for cos(2pix) using 
+    equidistional nodes """
     N = len(x_nodes)
     omega = np.ones_like(grid)
     
@@ -50,8 +51,9 @@ def interpolation_bound(
 
 def interpolation_bound_chebishev(
     x_nodes: npt.NDArray[np.float64],
-):
-    """Theoretical lagrange interpolation bound for chebishev nodes for f"""
+) -> float:
+    """Theoretical lagrange interpolation bound for cos(2pix) using Chebyshev nodes
+    on [0, 1]"""
     N = len(x_nodes)
     
     return (2 * np.pi)**N / (math.factorial(N) * 2**(2*N - 1))
@@ -69,7 +71,7 @@ def piecewise_interpolation( #Consider opening for chebyshev as well later
         fun (Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]]): _Function to interpolate
         x (npt.NDArray[np.float64]): Array to interpolate on
         n (int): Number of nodes - n + 1
-        k (int): Number of disjunct intervals - k + 1
+        k (int): Number of subintervals
         interval (tuple[float, float]): interval to interpolate on
 
     Returns:
