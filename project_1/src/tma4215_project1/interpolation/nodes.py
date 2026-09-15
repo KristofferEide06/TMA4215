@@ -32,13 +32,14 @@ def make_cost(
     fun: Callable[[Any], Any],
     interval: tuple[float, float],
     N: int,
-):
+) -> Callable[[Any], Any]:
+    """Generates the cost function for gd"""
     a, b = interval
     
     eta = anp.linspace(a, b, N + 1)
     fun_vals = fun(eta)
     
-    def cost(z):
+    def cost(z: Any) -> Any:
         x_nodes = z[:-1]
         epsilon = z[-1]
         
@@ -60,7 +61,13 @@ def gradient_descent(
     L: float,
     rho: float,
     rho_bar: float,
-):
+) -> tuple[
+    npt.NDArray[np.float64],
+    float,
+    npt.NDArray[np.float64],
+    npt.NDArray[np.float64],
+    npt.NDArray[np.int64]
+]:
     """Attempts to find ideal node placement and epsilon parameter using gradient descent
     with respect to the rbf interpolation of specific function
 
@@ -72,13 +79,12 @@ def gradient_descent(
         N: Grid size to evaluate function on
         L: GD adjustment parameter, tau = 1/L
         max_iter: Max iterations of gd algorithm
+        max_backtracks: Max backtracts per iteration
         tol: Gradient tolerance
-        rho: Acceptance scaling factor. Increase L if step accepted. 0 < rho < 1
-        rho_bar: Rejection scaling factor. Decrease L if step rejected. rho_bar >= 1
-        
+        rho: Acceptance scaling factor. Decrease L if step accepted. 0 < rho < 1
+        rho_bar: Rejection scaling factor. Increase L if step rejected. rho_bar > 1
 
-    Returns:
-        Updated x_nodes, eps array
+    Returns: Updated x_nodes, epsilon, z history, cost history, backtrack history
     """
     if L <= 0:
         raise ValueError('L must be positive')
@@ -96,6 +102,10 @@ def gradient_descent(
     cost = make_cost(fun, interval, N)
     grad_c = grad(cost) # pyright: ignore[reportCallIssue]
     
+    z_history = [z]
+    cost_history = [float(cost(z))] 
+    backtracks_history = []
+    
     while iterations < max_iter:
         g = grad_c(z)
         
@@ -105,6 +115,7 @@ def gradient_descent(
         phi = cost(z)
         
         backtracks = 0
+        rejections = 0
         step_accepted = False
         
         while backtracks < max_backtracks:
@@ -116,12 +127,26 @@ def gradient_descent(
                 z = z_new
                 L = rho * L
                 step_accepted = True
+                
                 break
             
             L = rho_bar * L
+            rejections += 1
             
         if not step_accepted:
             raise RuntimeError('Backtracking couldnt find acceptable step')    
+        
         iterations += 1
+        
+        z_history.append(z)
+        backtracks_history.append(rejections)
+        cost_history.append(float(phi_new))
+            
+    return (
+        np.asarray(z[:-1], dtype = np.float64), 
+        float(z[-1]),
+        np.asarray(z_history, dtype = np.float64),
+        np.asarray(cost_history, dtype = np.float64),
+        np.asarray(backtracks_history, dtype = np.int64),
+    )
     
-    return z[:-1], z[-1], iterations, cost(z)
