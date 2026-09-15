@@ -26,16 +26,7 @@ def lagrange(
     y_nodes: npt.NDArray[np.float64], 
     x: npt.NDArray[np.float64]
     ) -> npt.NDArray[np.float64]:
-    """_summary_
-
-    Args:
-        x_nodes (npt.NDArray[np.float64]): Nodes to interpolate on
-        y_nodes (npt.NDArray[np.float64]): Function values on nodes
-        x (npt.NDArray[np.float64]): Points to find interpolation value on
-
-    Returns:
-        npt.NDArray[np.float64]: Lagrangian interpolation function values on x
-    """
+    """Lagrangian interpolation function values on x"""
     pol = np.zeros_like(x, dtype = float)
     for i in range(len(x_nodes)):
         pol += y_nodes[i]*L(i, x_nodes, x)
@@ -46,7 +37,7 @@ def interpolation_bound(
     x_nodes: npt.NDArray[np.float64], 
     grid: npt.NDArray[np.float64]
     ) -> float:
-    """Theoretical lagrange interpolation bound for f """
+    """Theoretical lagrange interpolation bound for equidistional nodes for f """
     N = len(x_nodes)
     omega = np.ones_like(grid)
     
@@ -56,6 +47,14 @@ def interpolation_bound(
     omega_max = np.max(np.abs(omega)) #Numerical estimate of omega_max
     
     return (2 * np.pi)**N/math.factorial(N) * omega_max
+
+def interpolation_bound_chebishev(
+    x_nodes: npt.NDArray[np.float64],
+):
+    """Theoretical lagrange interpolation bound for chebishev nodes for f"""
+    N = len(x_nodes)
+    
+    return (2 * np.pi)**N / (math.factorial(N) * 2**(2*N - 1))
 
 def piecewise_interpolation( #Consider opening for chebyshev as well later
     fun: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
@@ -114,13 +113,13 @@ def rbf(
     x,
     epsilon,
 ):
-    """radial basis function interpolation on function with values y_nodes on x_nodes
+    """Radial basis function interpolation on function with values y_nodes on x_nodes
     
         Args:
             x_nodes (npt.NDArray[np.float64]): Points to interpolate on
             y_nodes (npt.NDArray[np.float64]): Function values on interpolation points
             x (npt.NDArray[np.float64]): Points to find interpolation value of
-            epsilon (float): shape parameter
+            epsilon (float): Shape parameter
     
         Returns:
             npt.NDArray[np.float64]: Interpolation values on x
