@@ -49,6 +49,19 @@ def make_cost(
     
     return cost
 
+def project_parameters(
+    z: Any,
+    interval: tuple[float, float],
+    epsilon_min: float,
+) -> Any:
+    """Projects nodes and epsilon into valid region"""
+    a, b = interval
+    
+    x_nodes = anp.clip(z[:-1], a, b)
+    epsilon = anp.maximum(z[-1], epsilon_min)
+    
+    return anp.concatenate((x_nodes, anp.array([epsilon]))) 
+
 def gradient_descent(
     fun: Callable[[Any], Any],
     n: int,
@@ -61,6 +74,7 @@ def gradient_descent(
     L: float,
     rho: float,
     rho_bar: float,
+    epsilon_min: float, 
 ) -> tuple[
     npt.NDArray[np.float64],
     float,
@@ -75,7 +89,7 @@ def gradient_descent(
         fun: Function to interpolate on
         n: Num nodes - n + 1
         interval: Interval to evaluate function and interpolate on
-        epsilon: Shape parameter of rbf
+        epsilon: Initial shape parameter of rbf
         N: Grid size to evaluate function on
         L: GD adjustment parameter, tau = 1/L
         max_iter: Max iterations of gd algorithm
@@ -83,21 +97,15 @@ def gradient_descent(
         tol: Gradient tolerance
         rho: Acceptance scaling factor. Decrease L if step accepted. 0 < rho < 1
         rho_bar: Rejection scaling factor. Increase L if step rejected. rho_bar > 1
+        epsilon_min: Minimum allowed shape parameter
 
     Returns: Updated x_nodes, epsilon, z history, cost history, backtrack history
     """
-    if L <= 0:
-        raise ValueError('L must be positive')
-    
-    if not 0 < rho < 1:
-        raise ValueError('rho must satisfy 0 < rho < 1')
-    if rho_bar <= 1:
-        raise ValueError('rho_bar must be greater than 1')
-
     iterations = 0
     
     x_nodes = generate_equidistant_nodes(interval, n)
     z = anp.concatenate((x_nodes, anp.array([epsilon])))
+    z = project_parameters(z, interval, epsilon_min)
     
     cost = make_cost(fun, interval, N)
     grad_c = grad(cost) # pyright: ignore[reportCallIssue]
@@ -109,7 +117,15 @@ def gradient_descent(
     while iterations < max_iter:
         g = grad_c(z)
         
-        if anp.linalg.norm(g) < tol:
+        projected_gradient = L * (
+            z - project_parameters(
+                z = z - g / L,
+                interval = interval,
+                epsilon_min = epsilon_min,
+            )
+        )
+        
+        if anp.linalg.norm(projected_gradient) < tol:
             break
         
         phi = cost(z)
@@ -120,10 +136,15 @@ def gradient_descent(
         
         while backtracks < max_backtracks:
             backtracks += 1
-            z_new = z - 1/L * g
+            z_new = project_parameters(
+                z - 1 / L * g,
+                interval = interval,
+                epsilon_min = epsilon_min,
+            )
+
             phi_new = cost(z_new)
             
-            if phi_new <= phi - 1 / (2 * L) * anp.dot(g, g):
+            if phi_new <= phi + anp.dot(g, z_new - z) + L / 2 * anp.dot(z_new - z, z_new - z):
                 z = z_new
                 L = rho * L
                 step_accepted = True
@@ -149,4 +170,3 @@ def gradient_descent(
         np.asarray(cost_history, dtype = np.float64),
         np.asarray(backtracks_history, dtype = np.int64),
     )
-    
