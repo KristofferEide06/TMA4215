@@ -57,12 +57,12 @@ def interpolation_bound(
     
     return (2 * np.pi)**N/math.factorial(N) * omega_max
 
-def piecewise_interpolation(
+def piecewise_interpolation( #Consider opening for chebyshev as well later
     fun: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],
     x: npt.NDArray[np.float64], 
     n: int,
     k: int, 
-    interval: tuple[float, float], 
+    interval: tuple[float, float],
     ) -> npt.NDArray[np.float64]:
     """piecewise lagrangian interpolation 
 
@@ -87,7 +87,7 @@ def piecewise_interpolation(
             if i < len(intervals) - 1:
                     mask = (x >= left) & (x < right)
             else:
-                    mask = (x >= left) & (x < right)
+                    mask = (x >= left) & (x <= right)
                         
             x_local = x[mask]
                 
