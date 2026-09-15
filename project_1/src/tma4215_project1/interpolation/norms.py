@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.typing as npt
 
-def max_norm(
+def max_norm_err(
     fun_val: npt.NDArray[np.float64], 
     approximation_val: npt.NDArray[np.float64],
     ) -> float:
@@ -9,7 +9,7 @@ def max_norm(
     
     return np.max(np.abs(fun_val - approximation_val))
 
-def l2_norm(
+def l2_norm_err(
     fun_val: npt.NDArray[np.float64], 
     approximation_val: npt.NDArray[np.float64],
     interval: tuple[float, float],

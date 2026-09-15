@@ -1,8 +1,12 @@
 import numpy as np
+import autograd.numpy as anp
+
 import math
 
 from collections.abc import Callable
 import numpy.typing as npt
+
+# pyright: reportAttributeAccessIssue=false
 
 def L(
     i: int, 
@@ -91,45 +95,41 @@ def piecewise_interpolation(
         
     return interpolation_arr
 
-def phi(
-    r: npt.NDArray[np.float64], 
-    epsilon: float
-    ) -> npt.NDArray[np.float64]:
+def phi(r, epsilon):
     """Calculates basis function for RBF"""
-    return np.exp(-(epsilon * r)**2)
+    return anp.exp(-(epsilon * r)**2)
 
 def rbf_matrix(
-    x_nodes: npt.NDArray[np.float64],
-    epsilon: float,
-) -> npt.NDArray[np.float64]:
+    x_nodes,
+    epsilon,
+):
     """Calculates basis function matrix for RBF"""
     diff = x_nodes[:, None] - x_nodes[None, :]
     
     return phi(diff, epsilon)
 
 def rbf(
-    x_nodes: npt.NDArray[np.float64],
-    y_nodes: npt.NDArray[np.float64],
-    x: npt.NDArray[np.float64],
-    epsilon: float,
-) -> npt.NDArray[np.float64]:
+    x_nodes,
+    y_nodes,
+    x,
+    epsilon,
+):
     """radial basis function interpolation on function with values y_nodes on x_nodes
-
-    Args:
-        x_nodes (npt.NDArray[np.float64]): Points to interpolate on
-        y_nodes (npt.NDArray[np.float64]): Function values on interpolation points
-        x (npt.NDArray[np.float64]): Points to find interpolation value of
-        epsilon (float): shape parameter
-
-    Returns:
-        npt.NDArray[np.float64]: Interpolation values on x
-    """
-    M = rbf_matrix(x_nodes, epsilon)
-    w = np.linalg.solve(M, y_nodes)
-
-    f = np.zeros_like(x, dtype = float)
     
-    for i in range(len(x_nodes)):
-        f += w[i] * phi(np.abs(x - x_nodes[i]), epsilon)
-        
-    return f
+        Args:
+            x_nodes (npt.NDArray[np.float64]): Points to interpolate on
+            y_nodes (npt.NDArray[np.float64]): Function values on interpolation points
+            x (npt.NDArray[np.float64]): Points to find interpolation value of
+            epsilon (float): shape parameter
+    
+        Returns:
+            npt.NDArray[np.float64]: Interpolation values on x
+        """
+    M = rbf_matrix(x_nodes, epsilon)
+    
+    w = anp.linalg.solve(M, y_nodes)
+    
+    diff = x[:, None] - x_nodes[None, :] #No need for abs, removes NA issue
+    Phi = phi(diff, epsilon)
+    
+    return Phi @ w

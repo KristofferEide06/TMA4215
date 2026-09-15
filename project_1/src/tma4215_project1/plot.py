@@ -24,8 +24,8 @@ from .interpolation.methods import(
 )
 
 from .interpolation.norms import(
-    l2_norm,
-    max_norm,
+    l2_norm_err,
+    max_norm_err,
 )
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -67,8 +67,8 @@ def plot_chebishev_equidistant_lagrange(
     lagrange_equidistant = lagrange(equidistant_nodes, fun(equidistant_nodes), x_arr)
     lagrange_chebishev = lagrange(chebishev_nodes, fun(chebishev_nodes), x_arr)
     
-    equidistant_max_error = max_norm(fun(x_arr), lagrange_equidistant)
-    chebishev_max_error = max_norm(fun(x_arr), lagrange_chebishev)
+    equidistant_max_error = max_norm_err(fun(x_arr), lagrange_equidistant)
+    chebishev_max_error = max_norm_err(fun(x_arr), lagrange_chebishev)
     
     ax.plot(x_arr, lagrange_equidistant, label = "Equidistant nodes", linestyle = '--')
     ax.plot(x_arr, lagrange_chebishev, label = "Chebishev nodes", linestyle = '--')
@@ -217,11 +217,11 @@ def compare_l2_max_norm(
         lagrange_equidistant = lagrange(x_nodes = equidistant_nodes, y_nodes = fun(equidistant_nodes), x = grid)
         lagrange_chebishev = lagrange(x_nodes = chebishev_nodes, y_nodes = fun(chebishev_nodes), x = grid)
             
-        equidistant_l2_norm_arr[i] = l2_norm(fun(grid), lagrange_equidistant, interval, N)
-        chebishev_l2_norm_arr[i] = l2_norm(fun(grid), lagrange_chebishev, interval, N)
+        equidistant_l2_norm_arr[i] = l2_norm_err(fun(grid), lagrange_equidistant, interval, N)
+        chebishev_l2_norm_arr[i] = l2_norm_err(fun(grid), lagrange_chebishev, interval, N)
         
-        equidistant_max_norm_arr[i] = max_norm(fun(grid), lagrange_equidistant)
-        chebishev_max_norm_arr[i] = max_norm(fun(grid), lagrange_chebishev)
+        equidistant_max_norm_arr[i] = max_norm_err(fun(grid), lagrange_equidistant)
+        chebishev_max_norm_arr[i] = max_norm_err(fun(grid), lagrange_chebishev)
         
         if bound: 
             bound_equidistant_arr[i] = interpolation_bound(equidistant_nodes, grid)
@@ -303,7 +303,7 @@ def compare_piecewise_global(
     for i, k in enumerate(k_arr):
         piecewise_interpolant = piecewise_interpolation(fun, x, n, k, interval)
         
-        piecewise_err_arr[i] = max_norm(fun_vals, piecewise_interpolant)
+        piecewise_err_arr[i] = max_norm_err(fun_vals, piecewise_interpolant)
         
         global_degree = num_nodes_arr[i] - 1
         
@@ -313,8 +313,8 @@ def compare_piecewise_global(
         lagrange_equidistant = lagrange(equidistant_nodes, fun(equidistant_nodes), x)
         lagrange_chebishev = lagrange(chebishev_nodes, fun(chebishev_nodes), x)
         
-        equidistant_err_arr[i] = max_norm(fun_vals, lagrange_equidistant)
-        chebishev_err_arr[i] = max_norm(fun_vals, lagrange_chebishev)
+        equidistant_err_arr[i] = max_norm_err(fun_vals, lagrange_equidistant)
+        chebishev_err_arr[i] = max_norm_err(fun_vals, lagrange_chebishev)
         
     
     fig, ax = plt.subplots(figsize = (8, 4))
@@ -372,7 +372,7 @@ def plot_rbf_error_epsilon(
     for i, epsilon in enumerate(epsilon_arr):
         rbf_interpolant = rbf(x_nodes, y_nodes, x, epsilon)
         
-        rbf_max_err_arr[i] = max_norm(fun_vals, rbf_interpolant)
+        rbf_max_err_arr[i] = max_norm_err(fun_vals, rbf_interpolant)
     
     fig, ax = plt.subplot(figsize = (8, 4))
     
