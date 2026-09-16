@@ -92,6 +92,7 @@ def rbf_optimization(
     rho_bar: float,
     epsilon_min: float,  
 ) -> dict[str, Any]:
+    """Runs RBF node and shape parameter optimization for one value of n"""
     grid = np.linspace(interval[0], interval[1], N + 1)
     fun_vals = fun(grid)
     
@@ -176,6 +177,7 @@ def rbf_optimization_multiple_n(
     rho_bar: float,
     epsilon_min: float   
 ) -> dict[str, Any]: 
+    """Compares optimized, equidistant and Chebishev RBF errors over n"""
     optimized_l2_err_arr = np.zeros_like(n_arr, dtype = np.float64)
     equidistant_l2_err_arr = np.zeros_like(n_arr, dtype = np.float64)
     chebishev_l2_err_arr = np.zeros_like(n_arr, dtype = np.float64)

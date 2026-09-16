@@ -101,6 +101,7 @@ def plot_cost_history(
     epsilon_min: float,
     savefig: bool = False,
 ) -> tuple[Figure, Axes]:
+    """Plots the gd cost as function of accepted iterations"""
     result = rbf_optimization(
         fun = fun,
         n = n,
@@ -131,7 +132,7 @@ def plot_cost_history(
     ax.grid()
     
     if savefig:
-        save_dir = OUTPUT_DIR / 'rbf_optimizationp'
+        save_dir = OUTPUT_DIR / 'rbf_optimization'
         save_dir.mkdir(parents = True, exist_ok = True)
         
         filename = f'rbf_cost_history_{interval[0]}_{interval[1]}_n{n}_L_{L}.png'
@@ -154,6 +155,7 @@ def plot_rbf_compare_n(
     epsilon_min: float,
     savefig: bool = False,
 ) -> tuple[Figure, Axes]:
+    """Plots  RBF l2 errors for different node distributions over n"""
     result = rbf_optimization_multiple_n(
         fun = fun,
         n_arr = n_arr,
@@ -188,10 +190,10 @@ def plot_rbf_compare_n(
     ax.legend()
     
     if savefig:
-            save_dir = OUTPUT_DIR / 'rbf_optimizationp'
-            save_dir.mkdir(parents = True, exist_ok = True)
+        save_dir = OUTPUT_DIR / 'rbf_optimization'
+        save_dir.mkdir(parents = True, exist_ok = True)
             
-            filename = f'rbf_l2_comparison_{interval[0]}_{interval[1]}_n_{n_arr[0]}_{n_arr[-1]}.png'
-            fig.savefig(save_dir / filename, bbox_inches = 'tight')
+        filename = f'rbf_l2_comparison_{interval[0]}_{interval[1]}_n_{n_arr[0]}_{n_arr[-1]}.png'
+        fig.savefig(save_dir / filename, bbox_inches = 'tight')
     
     return fig, ax
