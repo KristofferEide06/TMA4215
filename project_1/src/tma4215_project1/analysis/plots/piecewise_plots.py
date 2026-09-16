@@ -41,6 +41,9 @@ def plot_piecewise_max_error_k(
     fig, ax = plt.subplots(figsize = (8, 4))
     
     ax.plot(k_arr, max_err_arr)
+    
+    ax.set_yscale('log')
+    
     ax.set_xlabel('K')
     ax.set_ylabel(r'$L^\infty$')
     ax.set_title('Max error of piecewise interpolation as function of K')
