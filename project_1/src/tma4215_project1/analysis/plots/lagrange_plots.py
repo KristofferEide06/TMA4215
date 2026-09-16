@@ -89,10 +89,13 @@ def plot_chebishev_equidistant_lagrange(
         bound = False
     )
     
-    ax.plot(grid, lagrange_equidistant, label = "Equidistant nodes", linestyle = '--')
-    ax.plot(grid, lagrange_chebishev, label = "Chebishev nodes", linestyle = '--')
-    ax.plot(grid, fun(grid), label = "True function")
+    ax.plot(grid, lagrange_equidistant, label = "Equidistant nodes", linestyle = '--', color = 'blue')
+    ax.plot(grid, lagrange_chebishev, label = "Chebishev nodes", linestyle = '--', color = 'orange')
+    ax.plot(grid, fun(grid), label = "True function", color = 'green', linewidth = 2.5)
         
+    ax.scatter(equidistant_nodes, fun(equidistant_nodes), color = 'blue', zorder = 3, s = 14)
+    ax.scatter(chebishev_nodes, fun(chebishev_nodes), color = 'orange', zorder = 3, s = 14)
+    
     error_text = (
         r'$L^\infty$ error'
         f'\nEquidistant: {equidistant_max_err:.2g}\n'
