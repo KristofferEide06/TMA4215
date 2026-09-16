@@ -162,4 +162,3 @@ def lagrange_error_norms_multiple_n(
         equidistant_bound_arr,
         chebishev_bound_arr,
     )
-    
