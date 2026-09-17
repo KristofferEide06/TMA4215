@@ -5,13 +5,13 @@ from collections.abc import Callable
 
 from ...interpolation.nodes import(
     generate_equidistant_nodes,
-    generate_chebishev_nodes,
+    generate_chebyshev_nodes,
 )
 
 from ...interpolation.methods import(
     lagrange,
     interpolation_bound,
-    interpolation_bound_chebishev,
+    interpolation_bound_chebyshev,
 )
 
 from ...interpolation.norms import(
@@ -36,22 +36,22 @@ def lagrange_error_norms(
         bound (bool, optional): Theoretically estimated max error bound (only valid for f function). Defaults to False.
 
     Returns:
-        tuple[float, float, float, float, float, float]: equidistant max error, equidistant l2 error, chebishev max error,
-        chebishev l2 error, theoretical equidistant bound for max error, theoretical chebishev bound for max error
+        tuple[float, float, float, float, float, float]: equidistant max error, equidistant l2 error, chebyshev max error,
+        chebyshev l2 error, theoretical equidistant bound for max error, theoretical chebyshev bound for max error
     """
     grid = np.linspace(interval[0], interval[1], N + 1)
     
     equidistant_nodes = generate_equidistant_nodes(interval = interval, n = n)
-    chebishev_nodes = generate_chebishev_nodes(interval = interval, n = n)
+    chebyshev_nodes = generate_chebyshev_nodes(interval = interval, n = n)
     
     lagrange_equidistant = lagrange(
         x_nodes = equidistant_nodes, 
         y_nodes = fun(equidistant_nodes), 
         x = grid,
     )
-    lagrange_chebishev = lagrange(
-        x_nodes = chebishev_nodes, 
-        y_nodes = fun(chebishev_nodes), 
+    lagrange_chebyshev = lagrange(
+        x_nodes = chebyshev_nodes, 
+        y_nodes = fun(chebyshev_nodes), 
         x = grid,
     )
     
@@ -61,9 +61,9 @@ def lagrange_error_norms(
         fun_val = fun_vals, 
         approximation_val = lagrange_equidistant,
     )
-    chebishev_max_err = max_norm_err(
+    chebyshev_max_err = max_norm_err(
         fun_val = fun_vals, 
-        approximation_val = lagrange_chebishev,
+        approximation_val = lagrange_chebyshev,
     )
     
     equidistant_l2_err = l2_norm_err(
@@ -72,15 +72,15 @@ def lagrange_error_norms(
         interval = interval,
         N = N,
     )
-    chebishev_l2_err = l2_norm_err(
+    chebyshev_l2_err = l2_norm_err(
         fun_val = fun_vals, 
-        approximation_val = lagrange_chebishev,
+        approximation_val = lagrange_chebyshev,
         interval = interval,
         N = N,
     )
     
     equidistant_bound = np.nan
-    chebishev_bound = np.nan
+    chebyshev_bound = np.nan
     
     if bound:
         equidistant_bound = interpolation_bound(
@@ -88,15 +88,15 @@ def lagrange_error_norms(
             grid = grid,
         )    
         
-        chebishev_bound = interpolation_bound_chebishev(x_nodes = chebishev_nodes)
+        chebyshev_bound = interpolation_bound_chebyshev(x_nodes = chebyshev_nodes)
         
     return (
         equidistant_max_err, 
         equidistant_l2_err,
-        chebishev_max_err, 
-        chebishev_l2_err,
+        chebyshev_max_err, 
+        chebyshev_l2_err,
         equidistant_bound,
-        chebishev_bound,
+        chebyshev_bound,
     )
     
 def lagrange_error_norms_multiple_n(
@@ -124,7 +124,7 @@ def lagrange_error_norms_multiple_n(
 
     Returns:
         tuple[ npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], ]: arrays for
-        equidistant max error, equidistant l2 error, chebishev max error, chebishev l2 error, equidistant theoretical bound, chebishev theoretical bound
+        equidistant max error, equidistant l2 error, chebyshev max error, chebyshev l2 error, equidistant theoretical bound, chebyshev theoretical bound
     """
     if N is None:
         N = 100 * int(np.max(n_arr))
@@ -133,19 +133,19 @@ def lagrange_error_norms_multiple_n(
     equidistant_l2_err_arr = np.zeros_like(n_arr, dtype = float)
     equidistant_bound_arr = np.zeros_like(n_arr, dtype = float)
     
-    chebishev_max_err_arr = np.zeros_like(n_arr, dtype = float)
-    chebishev_l2_err_arr = np.zeros_like(n_arr, dtype = float)
-    chebishev_bound_arr = np.zeros_like(n_arr, dtype = float)
+    chebyshev_max_err_arr = np.zeros_like(n_arr, dtype = float)
+    chebyshev_l2_err_arr = np.zeros_like(n_arr, dtype = float)
+    chebyshev_bound_arr = np.zeros_like(n_arr, dtype = float)
 
     
     for i, n in enumerate(n_arr):
         (
             equidistant_max_err_arr[i], 
             equidistant_l2_err_arr[i], 
-            chebishev_max_err_arr[i], 
-            chebishev_l2_err_arr[i],
+            chebyshev_max_err_arr[i], 
+            chebyshev_l2_err_arr[i],
             equidistant_bound_arr[i],
-            chebishev_bound_arr[i],
+            chebyshev_bound_arr[i],
         ) = lagrange_error_norms(
             fun = fun,
             interval = interval,
@@ -157,8 +157,8 @@ def lagrange_error_norms_multiple_n(
     return (
         equidistant_max_err_arr, 
         equidistant_l2_err_arr, 
-        chebishev_max_err_arr, 
-        chebishev_l2_err_arr,
+        chebyshev_max_err_arr, 
+        chebyshev_l2_err_arr,
         equidistant_bound_arr,
-        chebishev_bound_arr,
+        chebyshev_bound_arr,
     )

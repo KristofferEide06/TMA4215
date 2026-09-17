@@ -45,7 +45,7 @@ def plot_piecewise_max_error_k(
     ax.set_yscale('log')
     
     ax.set_xlabel('K')
-    ax.set_ylabel(r'$L^\infty$')
+    ax.set_ylabel(r'$\|f-p_n\|_\infty$')
     ax.set_title('Max error of piecewise interpolation as function of K')
     ax.grid()
     
@@ -83,7 +83,7 @@ def compare_piecewise_global_max_error(
     (
         equidistant_max_err_arr,
         _,
-        chebishev_max_err_arr,
+        chebyshev_max_err_arr,
         _,
         _,
         _,
@@ -99,13 +99,13 @@ def compare_piecewise_global_max_error(
     
     ax.plot(num_nodes_arr, piecewise_max_err_arr, label = 'Piecewise')
     ax.plot(num_nodes_arr, equidistant_max_err_arr, label = 'Global equidistant')
-    ax.plot(num_nodes_arr, chebishev_max_err_arr, label = 'Global Chebishev')
+    ax.plot(num_nodes_arr, chebyshev_max_err_arr, label = 'Global Chebyshev')
     
     ax.set_xscale('log')
     ax.set_yscale('log')
 
     ax.set_xlabel('Number of discretization nodes')
-    ax.set_ylabel(r'$L^\infty$')
+    ax.set_ylabel(r'$\|f-p_n\|_\infty$')
     ax.set_title('Interpolation error as function of nodes')
    
     ax.grid()

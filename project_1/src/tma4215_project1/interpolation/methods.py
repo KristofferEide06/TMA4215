@@ -49,7 +49,7 @@ def interpolation_bound(
     
     return (2 * np.pi)**N/math.factorial(N) * omega_max
 
-def interpolation_bound_chebishev(
+def interpolation_bound_chebyshev(
     x_nodes: npt.NDArray[np.float64],
 ) -> float:
     """Theoretical lagrange interpolation bound for cos(2pix) using Chebyshev nodes

@@ -16,7 +16,7 @@ from ...interpolation.norms import(
 
 from ...interpolation.nodes import(
     generate_equidistant_nodes,
-    generate_chebishev_nodes,
+    generate_chebyshev_nodes,
     gradient_descent,
 )
 
@@ -189,10 +189,10 @@ def rbf_optimization_multiple_n(
     rho_bar: float,
     epsilon_min: float   
 ) -> dict[str, Any]: 
-    """Compares optimized, equidistant and Chebishev RBF errors over n"""
+    """Compares optimized, equidistant and Chebyshev RBF errors over n"""
     optimized_l2_err_arr = np.zeros_like(n_arr, dtype = np.float64)
     equidistant_l2_err_arr = np.zeros_like(n_arr, dtype = np.float64)
-    chebishev_l2_err_arr = np.zeros_like(n_arr, dtype = np.float64)
+    chebyshev_l2_err_arr = np.zeros_like(n_arr, dtype = np.float64)
     
     optimized_epsilon_arr = np.zeros_like(n_arr, dtype = np.float64)
     iteration_arr = np.zeros_like(n_arr, dtype = np.int64)
@@ -224,7 +224,7 @@ def rbf_optimization_multiple_n(
         optimized_nodes_lst.append(result['optimized_nodes'])
         
         equidistant_nodes = generate_equidistant_nodes(interval = interval, n = n)
-        chebishev_nodes = generate_chebishev_nodes(interval = interval, n = n)
+        chebyshev_nodes = generate_chebyshev_nodes(interval = interval, n = n)
         
         equidistant_rbf = rbf(
             x_nodes = equidistant_nodes, 
@@ -233,9 +233,9 @@ def rbf_optimization_multiple_n(
             epsilon = optimized_epsilon,
         )
         
-        chebishev_rbf = rbf(
-            x_nodes = chebishev_nodes,
-            y_nodes = fun(chebishev_nodes),
+        chebyshev_rbf = rbf(
+            x_nodes = chebyshev_nodes,
+            y_nodes = fun(chebyshev_nodes),
             x = grid,
             epsilon = optimized_epsilon,
         )
@@ -247,9 +247,9 @@ def rbf_optimization_multiple_n(
             N = N,
         )
         
-        chebishev_l2_err_arr[i] = l2_norm_err(
+        chebyshev_l2_err_arr[i] = l2_norm_err(
             fun_val = fun_vals,
-            approximation_val = chebishev_rbf,
+            approximation_val = chebyshev_rbf,
             interval = interval,
             N = N,
         )
@@ -258,7 +258,7 @@ def rbf_optimization_multiple_n(
         'n_arr': n_arr,
         'optimized_l2_error': optimized_l2_err_arr,
         'equidistant_l2_error': equidistant_l2_err_arr,
-        'chebishev_l2_error': chebishev_l2_err_arr,
+        'chebyshev_l2_error': chebyshev_l2_err_arr,
         'optimized_epsilon': optimized_epsilon_arr,
         'optimized_nodes': optimized_nodes_lst,
         'iterations': iteration_arr,
