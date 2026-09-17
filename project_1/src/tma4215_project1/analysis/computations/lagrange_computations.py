@@ -25,6 +25,7 @@ def lagrange_error_norms(
     n: int, 
     N: int,
     bound: bool = False,
+    use_numeric_calc: bool = True,
 ) -> tuple[float, float, float, float, float, float]: 
     """Calculates errors for Lagrange interpolation 
 
@@ -36,8 +37,7 @@ def lagrange_error_norms(
         bound (bool, optional): Theoretically estimated max error bound (only valid for f function). Defaults to False.
 
     Returns:
-        tuple[float, float, float, float, float, float]: equidistant max error, equidistant l2 error, chebyshev max error,
-        chebyshev l2 error, theoretical equidistant bound for max error, theoretical chebyshev bound for max error
+        tuple[float, float, float, float, float, float]: equidistant max error, equidistant l2 error, chebyshev max error, chebyshev l2 error, theoretical equidistant bound for max error, theoretical chebyshev bound for max error
     """
     grid = np.linspace(interval[0], interval[1], N + 1)
     
@@ -86,6 +86,7 @@ def lagrange_error_norms(
         equidistant_bound = interpolation_bound(
             x_nodes = equidistant_nodes,
             grid = grid,
+            use_numeric_calc = use_numeric_calc,
         )    
         
         chebyshev_bound = interpolation_bound_chebyshev(x_nodes = chebyshev_nodes)
@@ -105,6 +106,7 @@ def lagrange_error_norms_multiple_n(
     n_arr: npt.NDArray[np.int64],
     N: int | None = None,
     bound: bool = False,
+    use_numeric_calc: bool = True,
 ) -> tuple[
     npt.NDArray[np.float64], 
     npt.NDArray[np.float64], 
@@ -123,8 +125,7 @@ def lagrange_error_norms_multiple_n(
         bound (bool, optional): True if function if f. Defaults to False.
 
     Returns:
-        tuple[ npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], ]: arrays for
-        equidistant max error, equidistant l2 error, chebyshev max error, chebyshev l2 error, equidistant theoretical bound, chebyshev theoretical bound
+        tuple[ npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], npt.NDArray[np.float64], ]: arrays for equidistant max error, equidistant l2 error, chebyshev max error, chebyshev l2 error, equidistant theoretical bound, chebyshev theoretical bound
     """
     if N is None:
         N = 100 * int(np.max(n_arr))
@@ -152,6 +153,7 @@ def lagrange_error_norms_multiple_n(
             n = n,
             N = N,
             bound = bound, 
+            use_numeric_calc = use_numeric_calc,
         )
     
     return (

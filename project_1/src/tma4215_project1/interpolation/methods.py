@@ -36,7 +36,7 @@ def lagrange(
 def interpolation_bound(
     x_nodes: npt.NDArray[np.float64], 
     grid: npt.NDArray[np.float64],
-    use_numeric_calc: bool = False,
+    use_numeric_calc: bool = True,
     ) -> float:
     """Theoretical lagrange interpolation bound for cos(2pix) using 
     equidistional nodes """

@@ -17,7 +17,7 @@ def piecewise_lagrange_k(
     x: npt.NDArray[np.float64], 
     n: int,
     interval: tuple[float, float],
-     k_arr: npt.NDArray[np.int64],
+    k_arr: npt.NDArray[np.int64],
 ) -> tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]:
     """Errors for piecewise_lagrange across different values of k
 

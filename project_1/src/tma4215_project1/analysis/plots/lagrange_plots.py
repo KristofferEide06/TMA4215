@@ -192,6 +192,7 @@ def compare_l2_max_norm(
     n_arr: npt.NDArray[np.int64],
     bound: bool,
     savefig: bool = False,
+    use_numeric_calc: bool = True,
     ) -> tuple[Figure, Axes]:
     """Compares L2 and  max norm as functions of n for fun. Also plots bound if appropriate function
 
@@ -218,6 +219,7 @@ def compare_l2_max_norm(
         n_arr = n_arr,
         N = N,
         bound = bound,
+        use_numeric_calc = use_numeric_calc,
     )
     
     fig, axs = plt.subplots(nrows = 1, ncols = 2, figsize = (8, 4))
