@@ -11,7 +11,7 @@ import numpy.typing as npt
 def L(
     i: int, 
     x_nodes: npt.NDArray[np.float64], 
-    x: npt.NDArray[np.float64]
+    x: npt.NDArray[np.float64],
     ) -> npt.NDArray[np.float64]:
     """Calculates the i-th Lagrange basis polynomial"""
     L_i = np.ones_like(x, dtype = float)
@@ -24,7 +24,7 @@ def L(
 def lagrange(
     x_nodes: npt.NDArray[np.float64], 
     y_nodes: npt.NDArray[np.float64], 
-    x: npt.NDArray[np.float64]
+    x: npt.NDArray[np.float64],
     ) -> npt.NDArray[np.float64]:
     """Lagrangian interpolation function values on x"""
     pol = np.zeros_like(x, dtype = float)
@@ -35,11 +35,16 @@ def lagrange(
 
 def interpolation_bound(
     x_nodes: npt.NDArray[np.float64], 
-    grid: npt.NDArray[np.float64]
+    grid: npt.NDArray[np.float64],
+    use_numeric_calc: bool = True,
     ) -> float:
     """Theoretical lagrange interpolation bound for cos(2pix) using 
     equidistional nodes """
     N = len(x_nodes)
+    
+    if not use_numeric_calc:
+        return (2 * np.pi)**N /math.factorial(N)
+    
     omega = np.ones_like(grid)
     
     for node in x_nodes:
@@ -47,9 +52,10 @@ def interpolation_bound(
     
     omega_max = np.max(np.abs(omega)) #Numerical estimate of omega_max
     
+    
     return (2 * np.pi)**N/math.factorial(N) * omega_max
 
-def interpolation_bound_chebishev(
+def interpolation_bound_chebyshev(
     x_nodes: npt.NDArray[np.float64],
 ) -> float:
     """Theoretical lagrange interpolation bound for cos(2pix) using Chebyshev nodes
@@ -127,10 +133,12 @@ def rbf(
             npt.NDArray[np.float64]: Interpolation values on x
         """
     M = rbf_matrix(x_nodes, epsilon)
-    
     w = anp.linalg.solve(M, y_nodes)
     
-    diff = x[:, None] - x_nodes[None, :] #No need for abs, removes NA issue
+    x_eval = anp.atleast_1d(x)
+    diff = x_eval[:, None] - x_nodes[None, :] #No need for abs, removes NA issue
     Phi = phi(diff, epsilon)
     
-    return Phi @ w
+    values = Phi @ w
+    
+    return values[0] if anp.ndim(x) == 0 else values

@@ -80,7 +80,7 @@ def plot_rbf_error_epsilon(
     
     ax.set_title('RBF error as function of epsilon')
     ax.set_xlabel(r'$\epsilon$')
-    ax.set_ylabel(r'$L^\infty$')
+    ax.set_ylabel(r'$\|f-\tilde{f}\|_\infty$')
     
     if savefig:
         save_dir = OUTPUT_DIR / 'rbf_interpolation'
@@ -120,7 +120,7 @@ def plot_rbf_error_condition(
     fig, ax = plt.subplots(figsize = (8, 4))
     
     ax.plot(epsilon_arr, normalized_cond, label = r'Normalized $\log_{10}\kappa_2(M)$')
-    ax.plot(epsilon_arr, normalized_err, label = r'Normalized $\log_{10}L^\infty\mathrm{\ error}$')
+    ax.plot(epsilon_arr, normalized_err, label = r'Normalized $\log_{10}\|f-\tilde{f}\|_\infty$')
     
     ax.set_xlabel(r'$\epsilon$')
     ax.set_ylabel('Normalized log value')
@@ -299,13 +299,13 @@ def plot_rbf_interpolation(
     
     if include_optimized:
         error_text = (
-            r'$L^2$ error'
+            r'$\|f-\tilde{f}\|_2$'
             f'\nInitial: {result["initial_l2_error"]:.2g}'
             f'\nOptimized: {result["optimized_l2_error"]:.2g}'
         )
     else:
         error_text = (
-            r'$L^2$ error'
+            r'$\|f-\tilde{f}\|_2$'
             f'\nInitial: {result["initial_l2_error"]:.2g}'
         )
         
@@ -367,17 +367,17 @@ def plot_rbf_compare_n(
 
     optimized_l2_err_arr = result['optimized_l2_error']
     equidistant_l2_err_arr = result['equidistant_l2_error']
-    chebishev_l2_err_arr = result['chebishev_l2_error']
+    chebyshev_l2_err_arr = result['chebyshev_l2_error']
     
     fig, ax = plt.subplots(figsize = (8, 4))
     
     ax.plot(n_arr, optimized_l2_err_arr, label = 'Optimized')
     ax.plot(n_arr, equidistant_l2_err_arr, label = 'Equidistant')
-    ax.plot(n_arr, chebishev_l2_err_arr, label = 'Chebishev')
+    ax.plot(n_arr, chebyshev_l2_err_arr, label = 'Chebyshev')
     
     ax.set_xlabel('n')
-    ax.set_ylabel('$L^2$')
-    ax.set_title('$L^2$ error over n for different rbf node settings')
+    ax.set_ylabel(r'$\|f-\tilde{f}\|_2$')
+    ax.set_title(r'$\|f-\tilde{f}\|_2$ over n for different rbf node settings')
     
     ax.set_yscale('log')
     ax.grid()

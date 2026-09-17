@@ -12,7 +12,7 @@ from pathlib import Path
 
 from ...interpolation.nodes import(
     generate_equidistant_nodes,
-    generate_chebishev_nodes,
+    generate_chebyshev_nodes,
 )
 
 from ...interpolation.methods import (
@@ -28,7 +28,7 @@ from ..computations.lagrange_computations import(
 PROJECT_ROOT = Path(__file__).resolve().parents[4]
 OUTPUT_DIR = PROJECT_ROOT / 'outputs'
 
-def plot_chebishev_equidistant_lagrange(
+def plot_chebyshev_equidistant_lagrange(
     fun: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]], 
     interval: tuple[float, float], 
     n: int, 
@@ -36,7 +36,7 @@ def plot_chebishev_equidistant_lagrange(
     savefig: bool = False,
     ax: Axes|None = None,
     ) -> tuple[Figure, Axes]:
-    """Plots lagrange interpolation for equidistant and chebishev nodes on function
+    """Plots lagrange interpolation for equidistant and chebyshev nodes on function
     
     Args:
         fun (Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]]): Function to interpolate on
@@ -61,23 +61,23 @@ def plot_chebishev_equidistant_lagrange(
     
     equidistant_nodes = generate_equidistant_nodes(interval = interval, n = n)
     
-    chebishev_nodes = generate_chebishev_nodes(interval = interval, n = n)
+    chebyshev_nodes = generate_chebyshev_nodes(interval = interval, n = n)
             
     lagrange_equidistant = lagrange(
         x_nodes = equidistant_nodes, 
         y_nodes = fun(equidistant_nodes), 
         x = grid,
     )
-    lagrange_chebishev = lagrange(
-        x_nodes = chebishev_nodes, 
-        y_nodes = fun(chebishev_nodes), 
+    lagrange_chebyshev = lagrange(
+        x_nodes = chebyshev_nodes, 
+        y_nodes = fun(chebyshev_nodes), 
         x = grid,
     )
     
     (
         equidistant_max_err, 
         _, 
-        chebishev_max_err, 
+        chebyshev_max_err, 
         _,
         _,
         _,
@@ -90,16 +90,16 @@ def plot_chebishev_equidistant_lagrange(
     )
     
     ax.plot(grid, lagrange_equidistant, label = "Equidistant nodes", linestyle = '--', color = 'blue')
-    ax.plot(grid, lagrange_chebishev, label = "Chebishev nodes", linestyle = '--', color = 'orange')
+    ax.plot(grid, lagrange_chebyshev, label = "Chebyshev nodes", linestyle = '--', color = 'orange')
     ax.plot(grid, fun(grid), label = "True function", color = 'green', linewidth = 2.5)
         
     ax.scatter(equidistant_nodes, fun(equidistant_nodes), color = 'blue', zorder = 3, s = 14)
-    ax.scatter(chebishev_nodes, fun(chebishev_nodes), color = 'orange', zorder = 3, s = 14)
+    ax.scatter(chebyshev_nodes, fun(chebyshev_nodes), color = 'orange', zorder = 3, s = 14)
     
     error_text = (
-        r'$L^\infty$ error'
+        r'$\|f-p_n\|_\infty$'
         f'\nEquidistant: {equidistant_max_err:.2g}\n'
-        f'Chebishev: {chebishev_max_err:.2g}\n'
+        f'Chebyshev: {chebyshev_max_err:.2g}\n'
     )
         
     #AI
@@ -115,7 +115,7 @@ def plot_chebishev_equidistant_lagrange(
         
     if standalone:
         ax.set_title(
-            f"Lagrange interpolation on {interval} with {n + 1} nodes"
+            f"Lagrange interpolation on [{interval[0]}, {interval[1]}] with {n + 1} nodes"
         )
         ax.legend() 
     else:
@@ -141,7 +141,7 @@ def plot_multiple_n_lagrange(
     points: int = 1000,
     savefig: bool = False,
 ) -> tuple[Figure, Axes]:
-    """Plots lagrange interpolation for equidistant and chebishev for different values of n"""
+    """Plots lagrange interpolation for equidistant and chebyshev for different values of n"""
     m = len(n_arr)
     
     ncols = math.ceil(math.sqrt(m))
@@ -157,7 +157,7 @@ def plot_multiple_n_lagrange(
     
     for ax, n in zip(axs_flat, n_arr):
         fig, ax = (
-            plot_chebishev_equidistant_lagrange(
+            plot_chebyshev_equidistant_lagrange(
                 fun = fun,
                 interval = interval,
                 n = int(n),
@@ -192,6 +192,7 @@ def compare_l2_max_norm(
     n_arr: npt.NDArray[np.int64],
     bound: bool,
     savefig: bool = False,
+    use_numeric_calc: bool = True,
     ) -> tuple[Figure, Axes]:
     """Compares L2 and  max norm as functions of n for fun. Also plots bound if appropriate function
 
@@ -208,41 +209,42 @@ def compare_l2_max_norm(
     (
         equidistant_max_err_arr,
         equidistant_l2_err_arr,
-        chebishev_max_err_arr,
-        chebishev_l2_err_arr,
+        chebyshev_max_err_arr,
+        chebyshev_l2_err_arr,
         equidistant_bound_arr,
-        chebishev_bound_arr,
+        chebyshev_bound_arr,
     ) = lagrange_error_norms_multiple_n(
         fun = fun,
         interval = interval,
         n_arr = n_arr,
         N = N,
         bound = bound,
+        use_numeric_calc = use_numeric_calc,
     )
     
     fig, axs = plt.subplots(nrows = 1, ncols = 2, figsize = (8, 4))
     
     axs[0].plot(n_arr, equidistant_max_err_arr, label = 'equidistant', color = 'blue')
-    axs[0].plot(n_arr, chebishev_max_err_arr, label = 'chebishev', color = 'orange')
+    axs[0].plot(n_arr, chebyshev_max_err_arr, label = 'chebyshev', color = 'orange')
     
     if bound:
         axs[0].plot(n_arr, equidistant_bound_arr, label = 'equidistant bound', color = 'blue', linestyle = '--')
-        axs[0].plot(n_arr, chebishev_bound_arr, label = 'chebishev bound', color = 'orange', linestyle = '--')
+        axs[0].plot(n_arr, chebyshev_bound_arr, label = 'chebyshev bound', color = 'orange', linestyle = '--')
     
     axs[0].set_yscale('log')
     axs[0].grid()
-    axs[0].set_ylabel('max')
+    axs[0].set_ylabel(r'$\|f-p_n\|_\infty$')
     axs[0].set_xlabel('n')
     
     axs[1].plot(n_arr, equidistant_l2_err_arr, label = 'equidistant', color = 'blue')
-    axs[1].plot(n_arr, chebishev_l2_err_arr, label = 'chebishev', color = 'orange')
+    axs[1].plot(n_arr, chebyshev_l2_err_arr, label = 'chebyshev', color = 'orange')
     
     axs[1].set_yscale('log')
     axs[1].grid()
-    axs[1].set_ylabel('$L^2$')
+    axs[1].set_ylabel(r'$\|f-p_n\|_2$')
     axs[1].set_xlabel('n')
     
-    fig.suptitle('$L^2$ and max norm as function of n')
+    fig.suptitle(r'$\|f-p_n\|_2$ and $\|f-p_n\|_\infty$ as functions of n')
     handles, labels = axs[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc = 'upper center', bbox_to_anchor = (0.5, 0.94), ncol = 3)
     
