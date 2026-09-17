@@ -55,26 +55,37 @@ def rbf_error_epsilon(
     Returns:
         tuple[npt.NDArray[np.float64], npt.NDArray[np.float64]]: max error of rbf, l2 error of rbf
     """
-    rbf_max_err_arr = np.zeros_like(epsilon_arr, dtype = float)
-    rbf_l2_err_arr = np.zeros_like(epsilon_arr, dtype = float)
+    rbf_max_err_arr = np.full_like(epsilon_arr, np.nan, dtype = float)
+    rbf_l2_err_arr = np.full_like(epsilon_arr, np.nan, dtype = float)
     
     fun_vals = fun(x)
+    y_nodes = fun(x_nodes)
         
     for i, epsilon in enumerate(epsilon_arr):
-        rbf_interpolant = rbf(
-            x_nodes = x_nodes, 
-            y_nodes = fun(x_nodes), 
-            x = x, 
-            epsilon = epsilon
-        )
-                
-        rbf_max_err_arr[i] = max_norm_err(fun_val = fun_vals, approximation_val = rbf_interpolant)
-        rbf_l2_err_arr[i] = l2_norm_err(
+        try:
+            rbf_interpolant = rbf(
+                x_nodes = x_nodes, 
+                y_nodes = y_nodes, 
+                x = x, 
+                epsilon = epsilon
+            )
+        except np.linalg.LinAlgError:
+            continue
+        
+        if not np.all(np.isfinite(rbf_interpolant)):
+            continue
+        
+        max_err = max_norm_err(fun_val = fun_vals, approximation_val = rbf_interpolant)        
+        l2_err = l2_norm_err(
             fun_val = fun_vals,
             approximation_val = rbf_interpolant,
             interval = interval,
             N = len(x) - 1,
         )
+        
+        if np.isfinite(max_err) and np.isfinite(l2_err):
+            rbf_max_err_arr[i] = max_err 
+            rbf_l2_err_arr[i] = l2_err
         
     return rbf_max_err_arr, rbf_l2_err_arr
 
@@ -93,6 +104,7 @@ def rbf_optimization(
     epsilon_min: float,  
 ) -> dict[str, Any]:
     """Runs RBF node and shape parameter optimization for one value of n"""
+    init_epsilon = max(init_epsilon, epsilon_min)
     grid = np.linspace(interval[0], interval[1], N + 1)
     fun_vals = fun(grid)
     

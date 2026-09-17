@@ -141,10 +141,13 @@ def gradient_descent(
                 interval = interval,
                 epsilon_min = epsilon_min,
             )
-
-            phi_new = cost(z_new)
             
-            if phi_new <= phi + anp.dot(g, z_new - z) + L / 2 * anp.dot(z_new - z, z_new - z):
+            try:
+                phi_new = cost(z_new)
+            except np.linalg.LinAlgError:
+                phi_new = np.inf
+            
+            if np.isfinite(phi_new) and (phi_new <= phi + anp.dot(g, z_new - z) + L / 2 * anp.dot(z_new - z, z_new - z)):
                 z = z_new
                 L = rho * L
                 step_accepted = True

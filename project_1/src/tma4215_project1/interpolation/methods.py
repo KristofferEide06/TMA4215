@@ -127,10 +127,12 @@ def rbf(
             npt.NDArray[np.float64]: Interpolation values on x
         """
     M = rbf_matrix(x_nodes, epsilon)
-    
     w = anp.linalg.solve(M, y_nodes)
     
-    diff = x[:, None] - x_nodes[None, :] #No need for abs, removes NA issue
+    x_eval = anp.atleast_1d(x)
+    diff = x_eval[:, None] - x_nodes[None, :] #No need for abs, removes NA issue
     Phi = phi(diff, epsilon)
     
-    return Phi @ w
+    values = Phi @ w
+    
+    return values[0] if anp.ndim(x) == 0 else values
