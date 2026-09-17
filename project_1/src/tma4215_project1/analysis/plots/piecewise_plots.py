@@ -189,7 +189,7 @@ def compare_piecewise_global_max_error(
 
     ax.set_xlabel('Number of discretization nodes')
     ax.set_ylabel(r'$\|f-p_n\|_\infty$')
-    ax.set_title('Interpolation error as function of nodes')
+    ax.set_title(f'Interpolation error as function of nodes, local degree n = {n}')
    
     ax.grid()
     ax.legend()
