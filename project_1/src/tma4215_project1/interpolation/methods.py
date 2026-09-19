@@ -33,12 +33,12 @@ def lagrange(
         
     return pol
 
-def interpolation_bound(
+def interpolation_bound_f(
     x_nodes: npt.NDArray[np.float64], 
     grid: npt.NDArray[np.float64],
     use_numeric_calc: bool = True,
     ) -> float:
-    """Theoretical lagrange interpolation bound for cos(2pix) using 
+    """Theoretical lagrange interpolation bound for cos(2pix) on [0, 1] using 
     equidistional nodes """
     N = len(x_nodes)
     
@@ -55,14 +55,43 @@ def interpolation_bound(
     
     return (2 * np.pi)**N/math.factorial(N) * omega_max
 
-def interpolation_bound_chebyshev(
+def interpolation_bound_chebyshev_f(
     x_nodes: npt.NDArray[np.float64],
 ) -> float:
-    """Theoretical lagrange interpolation bound for cos(2pix) using Chebyshev nodes
+    """Theoretical lagrange interpolation bound for cos(2pix) on [0, 1] using Chebyshev nodes
     on [0, 1]"""
     N = len(x_nodes)
     
     return (2 * np.pi)**N / (math.factorial(N) * 2**(2*N - 1))
+
+def interpolation_bound_g(
+    x_nodes: npt.NDArray[np.float64], 
+    grid: npt.NDArray[np.float64],
+    use_numeric_calc: bool = True,
+    ) -> float:
+    """Theoretical lagrange interpolation bound for exp(3x)sin(2x) on [0, pi/4]"""
+    N = len(x_nodes)
+        
+    if not use_numeric_calc:
+        return 13**(N / 2) * np.exp(3 * np.pi / 4) * (np.pi / 4)**N / math.factorial(N)
+    
+    omega = np.ones_like(grid)
+        
+    for node in x_nodes:
+        omega *= grid - node
+        
+    omega_max = np.max(np.abs(omega)) #Numerical estimate of omega_max
+    
+    return 13**(N/2) * np.exp(3 * np.pi / 4) / math.factorial(N) * omega_max
+
+def interpolation_bound_chebyshev_g(
+    x_nodes: npt.NDArray[np.float64],
+) -> float:
+    """Theoretical lagrange interpolation bound for exp(3x)sin(2x) on [0, pi/4] using Chebyshev nodes
+    on [0, 1]"""
+    N = len(x_nodes)
+    
+    return 13**(N / 2) * np.exp(3 * np.pi / 4) * (np.pi / 4)**N / (math.factorial(N) * 2**(2 * N - 1))
 
 def piecewise_interpolation( #Consider opening for chebyshev as well later
     fun: Callable[[npt.NDArray[np.float64]], npt.NDArray[np.float64]],

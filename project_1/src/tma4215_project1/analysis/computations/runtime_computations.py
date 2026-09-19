@@ -58,9 +58,11 @@ def interpolation_runtime_comparison(
             
     global_time_median = np.median(global_time_arr, axis = 1)
     piecewise_time_median = np.median(piecewise_time_arr, axis = 1)
+    global_time_min = np.min(global_time_arr, axis = 1)
     
     global_std_arr = np.std(global_time_arr, axis = 1)
     piecewise_std_arr = np.std(piecewise_time_arr, axis = 1)
+    piecewise_time_min = np.min(piecewise_time_arr, axis = 1 )
     
     return {
         'num_nodes': num_nodes_arr,
@@ -70,4 +72,6 @@ def interpolation_runtime_comparison(
         'piecewise_median_time': piecewise_time_median,
         'global_std_time': global_std_arr,
         'piecewise_std_time': piecewise_std_arr,
+        'global_min_time': global_time_min,
+        'piecewise_min_time': piecewise_time_min,
     }

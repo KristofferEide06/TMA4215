@@ -81,12 +81,13 @@ def plot_chebyshev_equidistant_lagrange(
         _,
         _,
         _,
+        _,
     ) = lagrange_error_norms(
         fun = fun, 
         interval = interval,
         n = n,
         N = points - 1,
-        bound = False
+        bound = False,
     )
     
     ax.plot(grid, lagrange_equidistant, label = "Equidistant nodes", linestyle = '--', color = 'blue')
@@ -191,8 +192,8 @@ def compare_l2_max_norm(
     interval: tuple[float, float],
     n_arr: npt.NDArray[np.int64],
     bound: bool,
+    fun_type: str,
     savefig: bool = False,
-    use_numeric_calc: bool = True,
     ) -> tuple[Figure, Axes]:
     """Compares L2 and  max norm as functions of n for fun. Also plots bound if appropriate function
 
@@ -201,6 +202,7 @@ def compare_l2_max_norm(
         interval (tuple[float, float]): Interval to interpolate on
         n_arr (npt.NDArray[np.int64]): array of ns to plot on
         bound (bool): If max error norm bound is to be included in plot
+        fun_type (str): Either f or g depending on which function to calculate bound for, as described in task and report
 
     Returns: tuple[Figure, Axes]: Figure, axes
     """
@@ -211,7 +213,8 @@ def compare_l2_max_norm(
         equidistant_l2_err_arr,
         chebyshev_max_err_arr,
         chebyshev_l2_err_arr,
-        equidistant_bound_arr,
+        equidistant_tight_bound_arr,
+        equidistant_loose_bound_arr,
         chebyshev_bound_arr,
     ) = lagrange_error_norms_multiple_n(
         fun = fun,
@@ -219,7 +222,7 @@ def compare_l2_max_norm(
         n_arr = n_arr,
         N = N,
         bound = bound,
-        use_numeric_calc = use_numeric_calc,
+        fun_type = fun_type,
     )
     
     fig, axs = plt.subplots(nrows = 1, ncols = 2, figsize = (8, 4))
@@ -228,7 +231,8 @@ def compare_l2_max_norm(
     axs[0].plot(n_arr, chebyshev_max_err_arr, label = 'chebyshev', color = 'orange')
     
     if bound:
-        axs[0].plot(n_arr, equidistant_bound_arr, label = 'equidistant bound', color = 'blue', linestyle = '--')
+        axs[0].plot(n_arr, equidistant_tight_bound_arr, label = 'tight equidistant bound', color = 'blue', linestyle = '--')
+        axs[0].plot(n_arr, equidistant_loose_bound_arr, label = 'loose equidistant bound', color = 'purple', linestyle = '--')
         axs[0].plot(n_arr, chebyshev_bound_arr, label = 'chebyshev bound', color = 'orange', linestyle = '--')
     
     axs[0].set_yscale('log')

@@ -2,6 +2,7 @@ import numpy as np
 
 import numpy.typing as npt
 from collections.abc import Callable
+from typing import cast
 
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
@@ -148,6 +149,8 @@ def compare_piecewise_global_max_error(
     k_arr: npt.NDArray[np.int64],
     n: int,
     interval: tuple[float, float],
+    ax: Axes | None = None,
+    plot_global: bool = True,
     savefig: bool = False, 
 ) -> tuple[Figure, Axes]:
     """Compares max norm error as function of distinct nodes for piecewise interpolation and lagrange"""   
@@ -161,38 +164,71 @@ def compare_piecewise_global_max_error(
         k_arr = k_arr,
     )
     
-    global_n_arr = n * k_arr
+    if ax is None:
+        fig, ax = plt.subplots(figsize = (8, 4))
+    else:
+        fig = cast(Figure, ax.figure)
     
-    (
-        equidistant_max_err_arr,
-        _,
-        chebyshev_max_err_arr,
-        _,
-        _,
-        _,
-    ) = lagrange_error_norms_multiple_n(
-        fun = fun,
-        interval = interval,
-        n_arr = global_n_arr,
-        N = len(x) - 1,
-        bound = False,
-    )
-
-    fig, ax = plt.subplots(figsize = (8, 4))
+    ax.plot(num_nodes_arr, piecewise_max_err_arr, label = f'Piecewise n = {n}')
     
-    ax.plot(num_nodes_arr, piecewise_max_err_arr, label = 'Piecewise')
-    ax.plot(num_nodes_arr, equidistant_max_err_arr, label = 'Global equidistant')
-    ax.plot(num_nodes_arr, chebyshev_max_err_arr, label = 'Global Chebyshev')
+    if plot_global:
+        global_n_arr = n * k_arr
+            
+        (
+            equidistant_max_err_arr,
+            _,
+            chebyshev_max_err_arr,
+            _,
+            _,
+            _,
+            _,
+        ) = lagrange_error_norms_multiple_n(
+            fun = fun,
+            interval = interval,
+            n_arr = global_n_arr,
+            N = len(x) - 1,
+            bound = False,
+        )
+        
+        ax.plot(num_nodes_arr, equidistant_max_err_arr, label = f'Global equidistant')
+        ax.plot(num_nodes_arr, chebyshev_max_err_arr, label = 'Global Chebyshev')
     
     ax.set_xscale('log')
     ax.set_yscale('log')
 
     ax.set_xlabel('Number of discretization nodes')
     ax.set_ylabel(r'$\|f-p_n\|_\infty$')
-    ax.set_title(f'Interpolation error as function of nodes, local degree n = {n}')
+    ax.set_title(f'Interpolation error as function of nodes')
    
     ax.grid()
-    ax.legend()
+    
+    #AI formatting
+    handles, labels = ax.get_legend_handles_labels()
+
+    piecewise_indices = [
+        i for i, label in enumerate(labels)
+        if label.startswith('Piecewise')
+    ]
+    global_indices = [
+        i for i, label in enumerate(labels)
+        if label.startswith('Global')
+    ]
+
+    order = piecewise_indices + global_indices
+
+    for legend in list(fig.legends):
+        legend.remove()
+
+    fig.legend(
+        [handles[i] for i in order],
+        [labels[i] for i in order],
+        loc = 'upper center',
+        bbox_to_anchor = (0.5, 0.98),
+        ncol = 4,
+    )
+
+    fig.subplots_adjust(top = 0.73)
+    #AI formatting
     
     if savefig:
         save_dir = OUTPUT_DIR / 'piecewise_interpolation'

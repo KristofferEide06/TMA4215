@@ -114,8 +114,8 @@ def plot_rbf_error_condition(
     log_cond = np.log10(cond_l2)
     log_err = np.log10(rbf_max_err)
     
-    normalized_cond = (log_cond - (np.min(log_cond))) / (np.max(log_cond) - np.min(log_cond))
-    normalized_err = (log_err - np.min(log_err)) / (np.max(log_err) - np.min(log_err))
+    normalized_cond = (log_cond - (np.nanmin(log_cond))) / (np.nanmax(log_cond) - np.nanmin(log_cond))
+    normalized_err = (log_err - np.nanmin(log_err)) / (np.nanmax(log_err) - np.nanmin(log_err))
     
     fig, ax = plt.subplots(figsize = (8, 4))
     
